@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CanSat circuit lab</title>
+<style>
+:root{--paper:#e9eeec;--ink:#143246;--muted:#536d79;--board:#17394b;--board2:#204a5d;--aqua:#72d2cf;--amber:#ffcb78;--violet:#bdadff;--red:#df665b;--green:#448a71;--line:#bfd0d2}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:"Avenir Next",Avenir,"Segoe UI",sans-serif}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:wait;opacity:.6}:focus-visible{outline:3px solid #b05e25;outline-offset:3px}.shell{max-width:1560px;margin:auto;padding:24px 28px 40px}.top{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;border-bottom:2px solid var(--ink);padding-bottom:18px}.title{margin:0;font-size:clamp(32px,4vw,58px);font-weight:700;letter-spacing:-.06em;line-height:1}.subtitle{margin:9px 0 0;color:var(--muted);font-size:16px}.top-note{max-width:330px;font-size:13px;color:var(--muted);line-height:1.5}.layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;margin-top:22px}.work{min-width:0}.circuit{overflow:auto;background:var(--board);border-radius:5px;box-shadow:0 12px 30px #12314222}.circuit svg{display:block;min-width:810px;width:100%;height:auto}.gridline{stroke:#315669;stroke-width:1;opacity:.5}.chip{fill:#24495c;stroke:#91adba;stroke-width:1.5}.chip-dark{fill:#102c3c;stroke:#91adba;stroke-width:1.5}.chip-title{fill:#f3faf9;font-size:23px;font-weight:700;letter-spacing:-.03em}.chip-caption{fill:#a8c2ca;font-size:13px}.chip-value{fill:#fff;font:19px Menlo,Consolas,monospace}.pin{fill:#a6c1ca;font:12px Menlo,Consolas,monospace}.wire{fill:none;stroke-width:4;stroke-linecap:round;opacity:.78}.wire.bmp{stroke:var(--aqua)}.wire.radio{stroke:var(--violet)}.wire.air{stroke:#a6dce6;stroke-dasharray:8 8}.wire.fault{stroke:var(--red)!important;opacity:1}.wire.off{opacity:.22}.signal{fill:#90aab7}.signal.live{fill:var(--aqua)}.signal.fault{fill:var(--red)}.schematic-note{fill:#a2c0c9;font:12px Menlo,Consolas,monospace}.section-title{font-size:19px;font-weight:700;letter-spacing:-.025em;margin:20px 0 10px}.trace{background:#fbfdfb;border:1px solid var(--line);padding:16px}.trace canvas{display:block;width:100%;height:190px}.trace-info{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:13px}.timeline{width:100%;margin-top:14px;accent-color:#24677a}.readouts{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:16px}.reading{background:#f8fbf8;padding:13px 15px;min-width:0}.reading span{display:block;color:var(--muted);font-size:12px}.reading strong{display:block;margin-top:6px;font:22px Menlo,Consolas,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rail{border-left:1px solid var(--line);padding-left:22px}.rail h2{font-size:19px;margin:0 0 8px;letter-spacing:-.025em}.rail p{font-size:13px;line-height:1.45;color:var(--muted);margin:0 0 14px}.control{display:block;margin:14px 0}.control>span{display:block;font-size:13px;font-weight:600;margin-bottom:6px}.control input,.control select{width:100%;padding:9px 10px;border:1px solid #9fb8bf;background:#fbfdfb;border-radius:3px;color:var(--ink)}.check{display:flex;align-items:center;gap:10px;margin:15px 0;font-size:13px}.check input{width:18px;height:18px;accent-color:#24677a}.drop{border:1.5px dashed #86a4ad;padding:13px;background:#f9fcf9;border-radius:4px}.drop.drag{border-color:#227f8c;background:#e4f7f3}.drop strong{display:block;font-size:14px}.drop small{display:block;color:var(--muted);margin:5px 0 11px;line-height:1.45}.file-actions{display:flex;gap:8px;flex-wrap:wrap}.small-button{border:1px solid #7796a1;background:#fff;color:var(--ink);padding:6px 9px;border-radius:3px;font-size:12px}.file-list{font:11px Menlo,Consolas,monospace;line-height:1.7;color:var(--muted);margin:10px 0 0;word-break:break-word}.actions{display:flex;gap:8px;margin:18px 0 10px}.primary,.secondary{border-radius:3px;padding:11px 13px;font-weight:700;font-size:13px}.primary{border:1px solid #13536b;background:#13536b;color:white;flex:1}.secondary{border:1px solid #7796a1;background:transparent;color:var(--ink)}.result{border-left:4px solid var(--line);padding:10px 12px;margin-top:13px;background:#f8fbf8;font-size:13px;line-height:1.45}.result.good{border-color:var(--green)}.result.bad{border-color:var(--red)}.result.busy{border-color:#bd8a43}.result ul{padding-left:19px;margin:7px 0 0}.result pre{white-space:pre-wrap;max-height:170px;overflow:auto;font:11px Menlo,Consolas,monospace}.source-note{font-size:12px;color:var(--muted);line-height:1.5;border-top:1px solid var(--line);margin-top:18px;padding-top:12px}.playback{display:flex;align-items:center;gap:10px;margin-top:12px}.playback button{border:1px solid #7796a1;background:#fff;border-radius:3px;padding:7px 12px;font-size:13px}.playback span{font:12px Menlo,Consolas,monospace;color:var(--muted)}@media(max-width:1040px){.layout{grid-template-columns:1fr}.rail{border-left:0;border-top:1px solid var(--line);padding:22px 0 0}.readouts{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.shell{padding:16px}.top{display:block}.top-note{margin-top:12px}.readouts{grid-template-columns:repeat(2,1fr)}.reading strong{font-size:17px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+<body>
+<div class="shell">
+  <header class="top">
+    <div><h1 class="title">CanSat circuit lab</h1><p class="subtitle">Load C++ source, run a launch, watch the circuit respond.</p></div>
+    <div class="top-note">The flight logic runs as compiled C++. Pressure, temperature, and radio conditions are modeled inputs. The Pico firmware has its own compile check.</div>
+  </header>
+  <div class="layout">
+    <main class="work">
+      <div class="circuit" aria-label="CanSat wiring diagram">
+        <svg viewBox="0 0 1300 545" role="img" aria-label="BMP280 connected to a flight Pico, with RFM69 radio sending to a ground Pico">
+          <defs><pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" class="gridline" fill="none"/></pattern></defs>
+          <rect x="0" y="0" width="1300" height="545" fill="url(#grid)"/>
+          <text x="30" y="33" class="schematic-note">FLIGHT CIRCUIT  ·  3.3 V LOGIC</text>
+          <text x="1015" y="33" class="schematic-note">GROUND RECEIVER</text>
+          <path id="wire-bmp" class="wire bmp" d="M270 125 H323 Q338 125 338 140 V165 H365"/>
+          <path id="wire-radio" class="wire radio" d="M625 175 H674 V151 H708"/>
+          <path id="wire-air" class="wire air" d="M835 240 V305"/>
+          <circle id="bmp-signal" class="signal" cx="318" cy="125" r="7"/>
+          <circle id="radio-signal" class="signal" cx="680" cy="175" r="7"/>
+          <path id="wire-ground" class="wire radio" d="M968 385 H1000"/><circle id="ground-signal" class="signal" cx="984" cy="385" r="7"/>
+          <rect class="chip" x="30" y="65" rx="6" width="240" height="170"/>
+          <text class="chip-title" x="49" y="101">BMP280</text>
+          <text class="chip-caption" x="49" y="125">pressure + temperature</text>
+          <text class="chip-value" id="bmp-value" x="49" y="168">— Pa</text>
+          <text class="chip-value" id="bmp-temp" x="49" y="190">— °C</text>
+          <text class="pin" id="bmp-pins" x="49" y="212">GP0 SDA · GP1 SCL</text><text class="pin" x="49" y="229">3V3 · GND</text>
+          <rect class="chip-dark" x="365" y="72" rx="9" width="260" height="395"/>
+          <rect x="382" y="92" width="226" height="7" rx="3" fill="#5ca8aa"/>
+          <text class="chip-title" id="pico-name" x="388" y="142">Pico 2 / flight</text>
+          <text class="chip-caption" x="388" y="167">RP2350 · C++ firmware</text>
+          <text class="chip-value" id="pico-state" x="388" y="225">waiting</text>
+          <text class="chip-caption" x="388" y="252">mission state</text>
+          <text class="chip-value" id="pico-height" x="388" y="313">— m</text>
+          <text class="chip-caption" x="388" y="340">calculated altitude</text>
+          <text class="pin" x="388" y="402">sensor bus → packet → SPI</text>
+          <text class="pin" x="388" y="432">USB bootloader: UF2</text>
+          <rect class="chip" x="708" y="69" rx="6" width="260" height="184"/>
+          <text class="chip-title" x="728" y="105">RFM69HCW</text>
+          <text class="chip-caption" x="728" y="128">433.92 MHz packet radio</text>
+          <text class="chip-value" id="radio-value" x="728" y="174">— packets</text>
+          <text class="pin" id="radio-pins" x="728" y="207">GP16 MISO · GP17 CS · GP18 SCK</text><text class="pin" id="radio-pins-more" x="728" y="225">GP19 MOSI · GP20 RESET</text><text class="pin" x="728" y="243">3V3 · GND · ANT</text>
+          <rect class="chip" x="708" y="306" rx="6" width="260" height="160"/>
+          <text class="chip-title" x="728" y="343">RFM69HCW</text>
+          <text class="chip-caption" x="728" y="367">ground radio receiver</text>
+          <text class="chip-value" x="728" y="412">433.92 MHz</text>
+          <text class="pin" x="728" y="449">GP16–20 SPI · 3V3 · GND</text>
+          <rect class="chip" x="1000" y="306" rx="6" width="270" height="160"/>
+          <text class="chip-title" id="ground-name" x="1020" y="343">Pico 2 / ground</text>
+          <text class="chip-caption" x="1020" y="367">radio packet → USB dashboard</text>
+          <text class="chip-value" id="ground-value" x="1020" y="412">— received</text>
+          <text class="pin" x="1020" y="449">CRC checked · sequence counted</text>
+          <text x="28" y="512" class="schematic-note">GPIO labels follow pico/pins.hpp. Red marks an injected or detected fault. Connect both radios to antennas on the bench.</text>
+        </svg>
+      </div>
+      <div class="readouts" aria-live="polite">
+        <div class="reading"><span>Launch time</span><strong id="time-value">0.0 s</strong></div>
+        <div class="reading"><span>Physical altitude model</span><strong id="physical-value">— m</strong></div>
+        <div class="reading"><span>Radio packets received</span><strong id="received-value">—</strong></div>
+        <div class="reading"><span>Faults detected</span><strong id="fault-value">—</strong></div>
+      </div>
+      <h2 class="section-title">Launch trace</h2>
+      <section class="trace" aria-label="Physical and calculated altitude over the launch">
+        <div class="trace-info"><span>Physical altitude (cyan) / Pico calculation (violet)</span><span id="trace-range">0–75 s</span></div>
+        <canvas id="chart" width="1100" height="190"></canvas>
+        <input class="timeline" type="range" id="timeline" min="0" max="750" value="0" aria-label="Move through the simulated launch">
+        <div class="playback"><button id="play" type="button">Play launch</button><span id="play-status">Run a test to start.</span></div>
+      </section>
+    </main>
+    <aside class="rail">
+      <h2>Project files</h2>
+      <p>Drop your CanSat C++ files here, or choose the whole project folder. Uploaded files run from a temporary copy; your originals stay untouched.</p>
+      <div class="drop" id="drop">
+        <strong>Drop C++ files or project folder</strong>
+        <small>pico/flight.hpp and pico/cansat.hpp run in the circuit model. pico/firmware.cpp, pico/pins.hpp, and CMakeLists.txt are used by the firmware build check.</small>
+        <div class="file-actions"><button class="small-button" id="choose-files" type="button">Choose files</button><button class="small-button" id="choose-folder" type="button">Choose folder</button><button class="small-button" id="reset-files" type="button">Use workspace files</button></div>
+        <input id="files" type="file" multiple hidden accept=".cpp,.hpp,.txt">
+        <input id="folder" type="file" multiple webkitdirectory hidden>
+        <div class="file-list" id="file-list">Using the current CanSat workspace files.</div>
+      </div>
+      <h2 style="margin-top:24px">Launch settings</h2>
+      <label class="control"><span>Board</span><select id="board"><option value="pico2">Raspberry Pi Pico 2</option><option value="pico">Raspberry Pi Pico</option></select></label>
+      <label class="control"><span>Peak altitude, metres</span><input id="peak" type="number" min="15" max="250" value="100"></label>
+      <label class="control"><span>Ground temperature, °C</span><input id="ambient" type="number" min="-20" max="45" value="20"></label>
+      <label class="control"><span>Ground pressure, Pa</span><input id="pressure" type="number" min="90000" max="105000" value="101325"></label>
+      <label class="control"><span>Fault to inject</span><select id="fault"><option value="none">None</option><option value="bmp">BMP280 stops for one second</option><option value="crc">Corrupt one radio packet</option><option value="drop">Lose ten radio packets</option><option value="tx">One radio transmit timeout</option></select></label>
+      <div class="actions"><button id="run" class="primary" type="button">Run circuit simulation</button><button id="compile" class="secondary" type="button">Compile Pico firmware</button></div>
+      <div id="run-result" class="result">Select settings and run the simulation.</div>
+      <div id="compile-result" class="result">The firmware compile check is separate from the circuit model.</div>
+      <div class="source-note">The modeled launch supplies sensor and radio inputs to the same C++ flight logic used on the Pico. This tests code responses and the project pin plan. It cannot prove electrical behaviour, power, antenna performance, or a real sensor's calibration.</div>
+    </aside>
+  </div>
+</div>
+<script>
+const TOKEN='__CIRCUIT_TOKEN__', $=id=>document.getElementById(id), names=['pico/cansat.hpp','pico/flight.hpp','pico/pins.hpp','pico/firmware.cpp','CMakeLists.txt'];
+let files={}, data=null, index=0, timer=null;
+function sourceName(path){path=path.replaceAll('\\','/');return names.find(name=>path===name||path.endsWith('/'+name))||({'firmware.cpp':'pico/firmware.cpp','main.cpp':'pico/firmware.cpp','pins.hpp':'pico/pins.hpp','flight.hpp':'pico/flight.hpp','cansat.hpp':'pico/cansat.hpp','CMakeLists.txt':'CMakeLists.txt'}[path]||null)}
+async function loadFiles(list){let added=0;for(const file of list){let name=sourceName(file.webkitRelativePath||file.name);if(!name||file.size>200000)continue;files[name]=await file.text();added++}$('file-list').textContent=added?Object.keys(files).sort().join(' · '):'No matching source files found. Choose the CanSat folder or its C++ files.'}
+['dragover','dragleave','drop'].forEach(type=>$('drop').addEventListener(type,event=>{event.preventDefault();$('drop').classList.toggle('drag',type==='dragover');if(type==='drop')loadFiles(event.dataTransfer.files)}));
+$('choose-files').onclick=()=>$('files').click();$('choose-folder').onclick=()=>$('folder').click();$('files').onchange=event=>loadFiles(event.target.files);$('folder').onchange=event=>loadFiles(event.target.files);$('reset-files').onclick=()=>{files={};$('file-list').textContent='Using the current CanSat workspace files.'};
+function request(){return{files,board:$('board').value,peak:Number($('peak').value),ambient:Number($('ambient').value),pressure:Number($('pressure').value),fault:$('fault').value}}
+async function call(path,body){const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json','X-Circuit-Token':TOKEN},body:JSON.stringify(body)});if(!response.headers.get('Content-Type')?.includes('application/json'))throw Error('The local circuit lab returned a page instead of a result. Refresh this tab and try again.');const result=await response.json();if(!response.ok)throw Error(result.error||'The check failed.');return result}
+function result(id,kind,html){const node=$(id);node.className='result '+kind;node.innerHTML=html}
+function escapeHTML(text){return String(text).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}
+function stop(){if(timer)clearInterval(timer);timer=null;$('play').textContent='Play launch'}
+function setSignal(name,live,fault){const node=$(name);node.classList.toggle('live',Boolean(live));node.classList.toggle('fault',Boolean(fault))}
+function render(i){if(!data)return;index=Math.max(0,Math.min(i,data.rows.length-1));const r=data.rows[index],states=['boot','preflight','ready','ascent','descent','landed','recovery'],received=data.rows.slice(0,index+1).filter(row=>row.rx_ok).length,missed=index+1-received;
+  $('timeline').value=index;$('time-value').textContent=(r.t_ms/1000).toFixed(1)+' s';$('physical-value').textContent=(r.physical_alt_cm/100).toFixed(1)+' m';$('received-value').textContent=received.toString();const faults=[];if(missed)faults.push(missed+' packet loss');if(!r.bmp_input_ok)faults.push('BMP fault');$('fault-value').textContent=faults.join(' · ')||'none';
+  $('bmp-value').textContent=r.bmp_input_ok?r.sensor_pressure_pa+' Pa':'no reading';$('bmp-temp').textContent=r.bmp_input_ok?(r.sensor_temp_centi/100).toFixed(2)+' °C':'— °C';$('pico-state').textContent=states[r.frame_state]||'unknown';$('pico-height').textContent=(r.frame_alt_cm/100).toFixed(1)+' m';$('radio-value').textContent=r.tx_ok?'packet '+r.frame_seq:'TX timeout';$('ground-value').textContent=received+' received';
+  setSignal('bmp-signal',r.bmp_input_ok,!r.bmp_input_ok);setSignal('radio-signal',r.tx_ok,!r.tx_ok);setSignal('ground-signal',r.rx_ok,!r.rx_ok);$('wire-bmp').classList.toggle('fault',!r.bmp_input_ok);$('wire-radio').classList.toggle('fault',!r.tx_ok);$('wire-air').classList.toggle('fault',!r.rx_ok);$('play-status').textContent='Step '+(index+1)+' / '+data.rows.length;drawTrace()}
+function drawTrace(){const canvas=$('chart'),ctx=canvas.getContext('2d'),rows=data.rows,w=canvas.width,h=canvas.height,top=Math.max(...rows.map(r=>r.physical_alt_cm),1000)*1.1;ctx.clearRect(0,0,w,h);ctx.strokeStyle='#d2e1df';ctx.lineWidth=1;for(let j=1;j<4;j++){let y=j*h/4;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}for(const [field,color] of [['physical_alt_cm','#168e98'],['frame_alt_cm','#7561ad']]){ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2.5;rows.forEach((r,j)=>{let x=j*w/(rows.length-1),y=h-10-r[field]/top*(h-20);j?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke()}ctx.strokeStyle='#ad4a3d';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(index*w/(rows.length-1),0);ctx.lineTo(index*w/(rows.length-1),h);ctx.stroke()}
+function setPins(p){$('bmp-pins').textContent='GP'+p.BMP_SDA+' SDA · GP'+p.BMP_SCL+' SCL';$('radio-pins').textContent='GP'+p.RF_MISO+' MISO · GP'+p.RF_CS+' CS · GP'+p.RF_SCK+' SCK';$('radio-pins-more').textContent='GP'+p.RF_MOSI+' MOSI · GP'+p.RF_RST+' RESET'}
+async function run(){stop();$('run').disabled=true;result('run-result','busy','Compiling the selected flight logic and running the launch…');try{data=await call('/api/run',request());$('pico-name').textContent=data.board==='pico2'?'Pico 2 / flight':'Pico / flight';$('ground-name').textContent=data.board==='pico2'?'Pico 2 / ground':'Pico / ground';setPins(data.pins);$('timeline').max=data.rows.length-1;const received=data.rows.filter(r=>r.rx_ok).length,issues=data.issues;result('run-result',issues.length?'bad':'good',issues.length?'<strong>Code check found '+issues.length+' issue(s).</strong><ul>'+issues.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'<strong>Code checks passed.</strong> '+received+' radio packets received. Model inputs and physical wiring still need bench checks.');render(0);play()}catch(error){result('run-result','bad','<strong>Simulation stopped.</strong><pre>'+escapeHTML(error.message)+'</pre>')}finally{$('run').disabled=false}}
+function play(){if(!data)return;if(timer){stop();return}if(index>=data.rows.length-1)render(0);$('play').textContent='Pause';timer=setInterval(()=>{if(index>=data.rows.length-1){stop();return}render(index+3)},35)}
+$('run').onclick=run;$('play').onclick=play;$('timeline').oninput=event=>{stop();render(Number(event.target.value))};
+$('compile').onclick=async()=>{$('compile').disabled=true;result('compile-result','busy','Compiling the selected Pico firmware…');try{const response=await call('/api/compile',request());result('compile-result','good','<strong>Firmware compiled for '+escapeHTML(response.board)+'.</strong> '+escapeHTML(response.message))}catch(error){result('compile-result','bad','<strong>Firmware did not compile.</strong><pre>'+escapeHTML(error.message)+'</pre>')}finally{$('compile').disabled=false}};
+</script>
+</body></html>

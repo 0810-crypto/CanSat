@@ -1,0 +1,2 @@
+ms,seq,state,temp_centi_c,pressure_pa,relative_altitude_cm,flags,health,event
+100,2,2,2145,100123,0,1,0,3

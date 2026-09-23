@@ -1,0 +1,11 @@
+# Generated firmware, host executables, and Pico SDK build files
+/build/
+
+# Generated simulator examples and real flight logs
+/simulation/logs/
+/logs/
+
+# Python cache and macOS metadata
+__pycache__/
+*.py[cod]
+.DS_Store
