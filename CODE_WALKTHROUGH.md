@@ -76,7 +76,7 @@ The CRC starts at zero and uses polynomial 0x1021, with no final XOR. A generic 
 | [1–3](pico/pins.hpp#L1-L3) | Include guard and namespace. A namespace keeps pin names separate from other C++ names. |
 | [4](pico/pins.hpp#L4) | Put BMP280 SDA on GP0 and SCL on GP1. These are I²C signals, not power pins. |
 | [5](pico/pins.hpp#L5) | Map the radio SPI pins: MISO GP16, chip select GP17, clock GP18, MOSI GP19, reset GP20. |
-| [6](pico/pins.hpp#L6) | Set the BMP280 I²C address to 0x76. Some boards use 0x77; confirm the actual module before changing it. |
+| [6](pico/pins.hpp#L6) | Set the preferred BMP280 I²C address to 0x76. Flight startup probes both 0x76 and 0x77 and uses whichever returns BMP280 chip ID 0x58. |
 
 Change GPIO numbers here, then rebuild firmware. The simulation circuit diagram also reads this file. Recheck the physical wiring before powering the boards.
 
@@ -127,30 +127,31 @@ For example, a successful Reading with temperature 2145 and pressure 100123 is c
 
 | Lines | What they do |
 | --- | --- |
-| [1–11](pico/firmware.cpp#L1-L11) | Include flight logic, pin plan, Pico I²C/SPI libraries, and memory copying. Give short local names to the BMP address and radio control pins. |
-| [14](pico/firmware.cpp#L14) | rw writes one RFM69 register. The high address bit marks an SPI register write; chip select goes low for the transfer, then high. |
-| [15](pico/firmware.cpp#L15) | rr reads one RFM69 register using SPI. The high address bit is clear for a read. |
-| [16–17](pico/firmware.cpp#L16-L17) | rf_write and rf_read transfer a block of radio FIFO bytes. These handle bytes, not Frame validation. |
-| [18](pico/firmware.cpp#L18) | rmode writes the radio operating-mode register. |
-| [20–22](pico/firmware.cpp#L20-L22) | Start SPI at 1 MHz, assign SPI GPIO functions, configure manual chip select and reset, then pulse reset. |
-| [23–26](pico/firmware.cpp#L23-L26) | Program RFM69 registers for 9.6 kbps FSK, 5 kHz deviation, nominal 433.92 MHz, packet framing, and payload length. These settings must match the receiving radio and the actual module. |
-| [28–31](pico/firmware.cpp#L28-L31) | Prefix the 23-byte Frame with its length, write FIFO, transmit, poll packet-sent for up to 100 ms, return to standby, and report send success/failure. |
-| [32–36](pico/firmware.cpp#L32-L36) | If a radio payload is ready, read its length. Read a Frame only when length matches; otherwise drain it. Return true only if the frame tag, version, and CRC pass. |
-| [39–40](pico/firmware.cpp#L39-L40) | BMP280 object stores factory calibration coefficients and the intermediate fine temperature value. |
-| [41](pico/firmware.cpp#L41) | read selects a BMP280 register over I²C and receives the requested bytes. Both transfers must succeed. |
-| [42–43](pico/firmware.cpp#L42-L43) | begin starts I²C at 400 kHz, assigns SDA/SCL, and enables pull-ups. |
-| [44](pico/firmware.cpp#L44) | Check the BMP280 chip ID is 0x58, then read 24 bytes of calibration data. A wrong address, disconnected sensor, or wrong chip ID fails initialization. |
-| [45](pico/firmware.cpp#L45) | Decode little-endian calibration values. Temperature uses t1–t3; pressure uses p1–p9. |
-| [46](pico/firmware.cpp#L46) | Write BMP280 control register 0xF4 with 0x27 to start regular measurements. |
-| [48–49](pico/firmware.cpp#L48-L49) | sample reads six measurement bytes at 0xF7 and assembles raw pressure and temperature ADC values. |
-| [50](pico/firmware.cpp#L50) | Apply the BMP280 temperature compensation coefficients; output hundredths of a degree and save fine for pressure compensation. |
-| [51–52](pico/firmware.cpp#L51-L52) | Apply the BMP280 pressure compensation coefficients using 64-bit intermediate math. Return false if the denominator is zero; output pressure in pascals. |
-| [56–61](pico/firmware.cpp#L56-L61) | Ground build: initialize USB serial and radio, enter receive mode, print CSV header, then forever print only accepted frames as CSV. |
-| [62–65](pico/firmware.cpp#L62-L65) | Flight build: initialize USB, BMP280, radio, Flight logic, and the scheduling variable. BMP280 begin is attempted once at startup. |
-| [66–69](pico/firmware.cpp#L66-L69) | Loop forever. Every roughly 100 ms, create a Reading and sample the BMP280 if startup initialization succeeded. A failed sample can be tried again on the next tick. |
-| [70–71](pico/firmware.cpp#L70-L71) | Run one flight tick, send its Frame by radio, and store the result for reporting in the next Frame. |
+| [1–12](pico/firmware.cpp#L1-L12) | Include flight logic, pin plan, Pico USB/I²C/SPI libraries, and memory copying. Give short local names to the BMP address and radio control pins. |
+| [15](pico/firmware.cpp#L15) | rw writes one RFM69 register. The high address bit marks an SPI register write; chip select goes low for the transfer, then high. |
+| [16](pico/firmware.cpp#L16) | rr reads one RFM69 register using SPI. The high address bit is clear for a read. |
+| [17–18](pico/firmware.cpp#L17-L18) | rf_write and rf_read transfer a block of radio FIFO bytes. These handle bytes, not Frame validation. |
+| [19](pico/firmware.cpp#L19) | rmode writes the radio operating-mode register. |
+| [21–23](pico/firmware.cpp#L21-L23) | Start SPI at 1 MHz, assign SPI GPIO functions, configure manual chip select and reset, then pulse reset. |
+| [24–27](pico/firmware.cpp#L24-L27) | Program RFM69 registers for 9.6 kbps FSK, 5 kHz deviation, nominal 433.92 MHz, packet framing, and payload length. These settings must match the receiving radio and the actual module. |
+| [29–31](pico/firmware.cpp#L29-L31) | Prefix the 23-byte Frame with its length, write FIFO, transmit, poll packet-sent for up to 100 ms, return to standby, and report send success/failure. |
+| [33–37](pico/firmware.cpp#L33-L37) | If a radio payload is ready, read its length. Read a Frame only when length matches; otherwise drain it. Return true only if the frame tag, version, and CRC pass. |
+| [40–42](pico/firmware.cpp#L40-L42) | BMP280 object stores factory calibration coefficients, the intermediate fine temperature value, the selected address, and observed chip IDs. |
+| [43](pico/firmware.cpp#L43) | read selects a BMP280 register over I²C and receives bytes. Each transfer has a 10 ms timeout so a stuck bus cannot hold the flight loop indefinitely. |
+| [44–45](pico/firmware.cpp#L44-L45) | begin starts I²C at 400 kHz, assigns SDA/SCL, and enables pull-ups. |
+| [46–51](pico/firmware.cpp#L46-L51) | Read chip IDs at 0x76 and 0x77; choose the first BMP280 ID 0x58, or fail initialization. Then read 24 bytes of factory calibration data. |
+| [52](pico/firmware.cpp#L52) | Decode little-endian calibration values. Temperature uses t1–t3; pressure uses p1–p9. |
+| [53](pico/firmware.cpp#L53) | Write BMP280 control register 0xF4 with 0x27 to start regular measurements. |
+| [55–56](pico/firmware.cpp#L55-L56) | sample reads six measurement bytes at 0xF7 and assembles raw pressure and temperature ADC values. |
+| [57](pico/firmware.cpp#L57) | Apply the BMP280 temperature compensation coefficients; output hundredths of a degree and save fine for pressure compensation. |
+| [58–59](pico/firmware.cpp#L58-L59) | Apply the BMP280 pressure compensation coefficients using 64-bit intermediate math. Return false if the denominator is zero; output pressure in pascals. |
+| [63–68](pico/firmware.cpp#L63-L68) | Ground build: initialize USB serial and radio, enter receive mode, print CSV header, then forever print only accepted frames as CSV. |
+| [69–72](pico/firmware.cpp#L69-L72) | Flight build: initialize USB, BMP280, radio, read one radio version register, create Flight logic, and set up scheduling. BMP280 begin is attempted once at startup. |
+| [73–76](pico/firmware.cpp#L73-L76) | Loop forever. Every roughly 100 ms, create a Reading and sample the BMP280 if startup initialization succeeded. A failed sample can be tried again on the next tick. |
+| [77–78](pico/firmware.cpp#L77-L78) | Run one flight tick, send its Frame by radio, and store the result for reporting in the next Frame. |
+| [79–86](pico/firmware.cpp#L79-L86) | When USB serial is connected, print a one-time device-status comment, then the CSV header and each outgoing frame. This is a local mirror of transmissions, not evidence that a ground receiver got them. |
 
-The flight Pico currently **transmits** telemetry. The included ground Pico currently **receives** it. The ground build is selected by the GROUND_STATION compile definition; it is not a second mission. If only the flight Pico exists, the laptop dashboard has no proven direct radio source until the laptop receiver's hardware and output format are identified.
+The flight Pico currently **transmits** telemetry and mirrors the outgoing frames over USB for bench checks. The included ground Pico currently **receives** radio frames. The ground build is selected by the GROUND_STATION compile definition; it is not a second mission. If only the flight Pico exists, the laptop still has no proven direct radio receiver until the laptop stick's hardware and output format are identified.
 
 ## Laptop ground files
 
@@ -281,11 +282,11 @@ The ignore rules keep generated build files, simulated or real logs, Python cach
 | If you change… | Also check… |
 | --- | --- |
 | GPIO or BMP address | pico/pins.hpp, physical wiring, circuit pin validation, firmware build |
-| Sampling interval | pico/firmware.cpp line 67; timing-dependent mission and simulation expectations |
+| Sampling interval | pico/firmware.cpp line 74; timing-dependent mission and simulation expectations |
 | Mission thresholds or state order | pico/cansat.hpp Mission::update, both dashboard state labels, simulator expected events, tests |
 | Frame fields, size, version, or bit meanings | pico/cansat.hpp, flight and ground firmware together, CSV writer, laptop dashboard, browser viewer, simulators, tests |
-| Radio frequency or modem registers | pico/firmware.cpp lines 23–26 on **both** radios; module band and antenna must agree |
-| BMP280 compensation | pico/firmware.cpp lines 40–52; test against known sensor data and then a real module |
+| Radio frequency or modem registers | pico/firmware.cpp lines 24–27 on **both** radios; module band and antenna must agree |
+| BMP280 compensation | pico/firmware.cpp lines 41–59; test against known sensor data and then a real module |
 | Circuit page behavior | simulation/circuit.html and simulation/circuit_server.py; run make check |
 
 Run <code>make check</code> after source changes. Run <code>make firmware</code> to make the Pico UF2 images. Passing either proves only the code paths they exercise; test the actual connected BMP280 and radio link on the bench before flight.

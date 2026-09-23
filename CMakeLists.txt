@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
-if(NOT DEFINED PICO_SDK_PATH)
+if(NOT PICO_SDK_PATH)
   message(FATAL_ERROR "Configure with -DPICO_SDK_PATH=/path/to/pico-sdk")
 endif()
 include(${PICO_SDK_PATH}/external/pico_sdk_import.cmake)

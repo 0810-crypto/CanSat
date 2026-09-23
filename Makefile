@@ -36,5 +36,5 @@ circuit:
 	python3 simulation/circuit_server.py
 
 firmware:
-	cmake -S . -B build/$(PICO_BOARD)-arm -DPICO_SDK_PATH=$$PICO_SDK_PATH -DPICO_BOARD=$(PICO_BOARD) -DPICO_TOOLCHAIN_PATH=$$PICO_TOOLCHAIN_PATH
+	cmake -S . -B build/$(PICO_BOARD)-arm -DPICO_SDK_PATH="$(PICO_SDK_PATH)" -DPICO_BOARD=$(PICO_BOARD) $(if $(PICO_TOOLCHAIN_PATH),-DPICO_TOOLCHAIN_PATH="$(PICO_TOOLCHAIN_PATH)")
 	cmake --build build/$(PICO_BOARD)-arm
