@@ -2,6 +2,8 @@
 
 This folder contains the **primary mission only**. The flight Pico 2 reads BMP280 pressure and temperature, calculates altitude and mission state, then transmits telemetry with an RFM69HCW radio. There is no LiDAR build or LiDAR wiring in this version.
 
+**For the other coder:** [CODE_WALKTHROUGH.md](CODE_WALKTHROUGH.md) follows the readings from sensor to radio to dashboard and explains each source file with line links, units, state changes, tests, and the places to edit.
+
 ## Find the right file
 
 | What you need | File |
