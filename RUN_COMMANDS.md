@@ -1,13 +1,37 @@
 # Commands to run CanSat (macOS, Pico 2)
 
-This is the short command sheet for a teammate who has the **CanSat folder in Downloads**. Open Terminal and copy one block at a time. There must be a space after <code>cd</code>: use <code>cd ~/Downloads/CanSat</code>, not <code>cd~/Downloads/CanSat</code> or <code>cd /Downloads/CanSat</code>.
+This is the short command sheet for a teammate who has the **CanSat folder in ~/Code**. Open Terminal and copy one block at a time. There must be a space after <code>cd</code>: use <code>cd ~/Code/CanSat</code>, not <code>cd~/Code/CanSat</code> or <code>cd /Downloads/CanSat</code>.
 
 The flight Pico starts its flashed program automatically when powered normally. Terminal commands build it, flash it, or **watch** its USB output; <code>cat</code> does not start the Pico.
+
+## Quick start: live terminal
+
+~~~sh
+cd ~/Code/CanSat
+./run
+~~~
+
+`make run` does the same thing. The launcher builds the dashboard and finds a
+USB Pico automatically. It shows RECEIVING while valid telemetry arrives and
+DATA STOPPED after three seconds without a valid row. Ctrl+C stops the viewer;
+timestamped CSV logs are saved in `logs/`. A flight Pico gives direct USB bench
+data; a ground Pico gives packets received over radio. Connect normally, without
+holding BOOTSEL. Close other serial viewers before starting.
+
+With several USB devices, choose one using `./run --port /dev/cu.usbmodemXXX`.
+With no hardware, use `./run --demo` for a roughly 15-second simulated flight.
+The demo remains labelled on screen and does not verify electronics or RF.
+
+The existing ground receiver uses a second Pico 2 and an RFM69HCW with an
+appropriate antenna, wired as shown in README. Build and flash its
+`cansat_ground.uf2` as described below. The receiver and flight radio are
+configured for 433.92 MHz and matching protocol version 3. A generic USB radio
+stick needs its own compatible driver and is not supported by this launcher.
 
 ## 1. Enter the folder and check the laptop code
 
 ~~~sh
-cd ~/Downloads/CanSat
+cd ~/Code/CanSat
 make check
 ~~~
 
@@ -38,7 +62,7 @@ On the original Isaac Mac, the SDK is at <code>~/pico-sdk</code> and the ARM too
 ## 3. Build the actual Pico 2 firmware
 
 ~~~sh
-cd ~/Downloads/CanSat
+cd ~/Code/CanSat
 export PICO_SDK_PATH="$HOME/pico-sdk"
 make firmware
 ~~~
@@ -57,7 +81,7 @@ This makes <code>build/pico2-arm/cansat_flight.uf2</code> and <code>build/pico2-
 Disconnect power before fixing or moving soldered connections. Once the hardware is ready, hold **BOOTSEL** while plugging the **flight Pico 2** into the Mac. Release BOOTSEL. Finder should show an <code>RP2350</code> drive. Check it, then copy the flight image:
 
 ~~~sh
-cd ~/Downloads/CanSat
+cd ~/Code/CanSat
 ls /Volumes/RP2350/INFO_UF2.TXT
 cp build/pico2-arm/cansat_flight.uf2 /Volumes/RP2350/
 ~~~
@@ -91,7 +115,7 @@ This USB stream mirrors **flight transmissions** for bench checks. It does not p
 The included ground firmware requires another Pico 2 with an RFM69HCW wired to the radio pins in [README.md](README.md). Hold BOOTSEL while connecting that **ground Pico**, then:
 
 ~~~sh
-cd ~/Downloads/CanSat
+cd ~/Code/CanSat
 cp build/pico2-arm/cansat_ground.uf2 /Volumes/RP2350/
 make host
 ls /dev/cu.usbmodem*
@@ -103,7 +127,7 @@ Replace <code>YOUR_GROUND_PICO</code> with the actual device suffix. The dashboa
 ## 7. Run simulations without any Pico connected
 
 ~~~sh
-cd ~/Downloads/CanSat
+cd ~/Code/CanSat
 make check
 make demo
 open ground/dashboard.html
@@ -112,7 +136,7 @@ open ground/dashboard.html
 The <code>make demo</code> command creates example CSVs in <code>simulation/logs/</code>; choose one in the browser dashboard. For the interactive circuit model, run:
 
 ~~~sh
-cd ~/Downloads/CanSat
+cd ~/Code/CanSat
 make circuit
 ~~~
 

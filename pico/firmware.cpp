@@ -63,8 +63,15 @@ struct Bmp280 {
 #ifdef GROUND_STATION
 // Ground receiver Pico: receives packets and prints USB telemetry.
 int main() {
-  stdio_init_all(); radio_init(); rmode(0x10); sleep_ms(1500); std::puts(cansat::CSV_HEADER); Frame f;
-  while (true) if (radio_receive(f)) cansat::write_csv(stdout, f);
+  stdio_init_all(); radio_init(); uint8_t version = rr(0x10); rmode(0x10); Frame f; bool header_sent = false;
+  while (true) {
+    if (stdio_usb_connected() && !header_sent) {
+      std::printf("# ground_receiver,frequency_mhz=433.92,radio_version=0x%02X\n", version);
+      std::puts(cansat::CSV_HEADER); std::fflush(stdout); header_sent = true;
+    } else if (!stdio_usb_connected()) header_sent = false;
+    if (radio_receive(f) && stdio_usb_connected()) { cansat::write_csv(stdout, f); std::fflush(stdout); }
+    sleep_ms(1);
+  }
 }
 #else
 // Flight Pico: BMP280 pressure and temperature, altitude, and radio.

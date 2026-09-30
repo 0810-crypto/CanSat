@@ -8,6 +8,10 @@ build/dashboard: ground/dashboard.cpp
 
 host: build/dashboard
 
+.PHONY: run
+run:
+	./run
+
 build/simulation/simulate: simulation/simulate.cpp pico/flight.hpp pico/cansat.hpp
 	mkdir -p build/simulation
 	$(CXX) $(CXXFLAGS) simulation/simulate.cpp -o $@
@@ -25,6 +29,7 @@ check: build/simulation/simulate
 	$(CXX) $(CXXFLAGS) tests/check.cpp -o /tmp/cansat-check
 	/tmp/cansat-check
 	sh tests/dashboard_check.sh
+	python3 tests/run_check.py
 	build/simulation/simulate > /dev/null
 	build/simulation/simulate --fault bmp > /dev/null
 	build/simulation/simulate --fault crc > /dev/null

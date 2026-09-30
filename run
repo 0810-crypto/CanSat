@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+"""CanSat USB viewer. ./run [--port DEVICE | --demo]"""
+import argparse, glob, os, select, subprocess, sys, termios, time
+from datetime import datetime
+from pathlib import Path
+
+LIMITS = [(0, 2**32-1), (0, 255), (0, 6), (-32768, 32767), (0, 2**32-1), (-2**31, 2**31-1), (0, 255), (0, 255), (0, 7)]
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    choice = parser.add_mutually_exclusive_group()
+    choice.add_argument('--port', help='USB device; otherwise auto-detect')
+    choice.add_argument('--demo', action='store_true', help='simulated flight without hardware')
+    args = parser.parse_args(); os.chdir(Path(__file__).resolve().parent)
+    subprocess.run(['make', 'host'] + (['build/simulation/simulate'] if args.demo else []), check=True)
+    source = dashboard = saved = fd = None
+    try:
+        if args.demo:
+            source = subprocess.Popen(['build/simulation/simulate'], stdout=subprocess.PIPE, start_new_session=True)
+            fd = source.stdout.fileno(); label = 'DEMO — simulated data'
+        else:
+            ports = sorted(glob.glob('/dev/cu.usbmodem*') + glob.glob('/dev/cu.usbserial*'))
+            if not args.port and len(ports) != 1:
+                print('No USB Pico found.' if not ports else 'Multiple USB devices: ' + ', '.join(ports))
+                print('Connect normally; use ./run --port DEVICE or ./run --demo.'); return 1
+            port = args.port or ports[0]
+            fd = os.open(port, os.O_RDONLY | os.O_NOCTTY | os.O_NONBLOCK)
+            saved = termios.tcgetattr(fd); settings = termios.tcgetattr(fd)
+            settings[:4] = [0, 0, termios.CS8 | termios.CREAD | termios.CLOCAL, 0]
+            settings[4:6] = [termios.B115200]*2
+            settings[6][termios.VMIN] = 1; settings[6][termios.VTIME] = 0
+            termios.tcsetattr(fd, termios.TCSANOW, settings)
+            label = f'USB {port} — flight Pico: bench; ground Pico: radio'
+        log = 'logs/cansat-' + datetime.now().strftime('%Y%m%d-%H%M%S-%f') + '.csv'
+        dashboard = subprocess.Popen(['build/dashboard', log, label], stdin=subprocess.PIPE, start_new_session=True)
+        print(f'{label}\nWAITING FOR DATA — Ctrl+C to stop. Log: {log}', flush=True)
+        buffer = b''; last = time.monotonic(); received = stale = False
+        while True:
+            if dashboard.poll() is not None: raise OSError('Dashboard stopped; check the log path.')
+            if select.select([fd], [], [], 1)[0]:
+                chunk = os.read(fd, 4096)
+                if not chunk:
+                    print('\nDEMO COMPLETE' if args.demo else '\nDISCONNECTED', flush=True)
+                    return source.wait() if source else 1
+                buffer += chunk
+                if len(buffer) > 65536: raise ValueError('USB line exceeds 64 KiB; check the device.')
+                while b'\n' in buffer:
+                    line, buffer = buffer.split(b'\n', 1)
+                    if line.startswith(b'#'): print(line.decode('ascii', errors='replace'), flush=True)
+                    fields = line.strip().split(b',')
+                    try:
+                        valid = len(fields) == 9 and all(x.lstrip(b'-').isdigit() and lo <= int(x) <= hi for x, (lo, hi) in zip(fields, LIMITS))
+                    except ValueError: valid = False
+                    if valid:
+                        dashboard.stdin.write(b','.join(str(int(x)).encode() for x in fields) + b'\n'); dashboard.stdin.flush()
+                        last = time.monotonic(); received = True; stale = False
+                        if args.demo: time.sleep(.02)
+            if time.monotonic() - last >= 3 and not stale:
+                print('\n' + ('DATA STOPPED' if received else 'WAITING FOR DATA') + ': no valid rows for 3s. Check power, USB and radio.', flush=True); stale = True
+    finally:
+        status = 0
+        if dashboard:
+            try: dashboard.stdin.close()
+            except BrokenPipeError: pass
+            status = dashboard.wait()
+        if saved is not None:
+            try: termios.tcsetattr(fd, termios.TCSANOW, saved)
+            except termios.error: pass  # Unplugged device cannot be restored.
+        if source:
+            source.stdout.close()
+            if source.poll() is None: source.terminate()
+            source.wait()
+        elif fd is not None: os.close(fd)
+        if status: raise OSError('Dashboard failed; check the log path.')
+
+if __name__ == '__main__':
+    try: sys.exit(main())
+    except KeyboardInterrupt: print('\nStopped. Logs saved in logs/.')
+    except (OSError, ValueError, subprocess.CalledProcessError) as error:
+        print(f'CanSat: {error}', file=sys.stderr); sys.exit(1)

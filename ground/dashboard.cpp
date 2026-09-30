@@ -14,12 +14,14 @@ static bool parse(const char *line, Telemetry &t) {
 static std::string default_log() {
   std::time_t now = std::time(nullptr); char stamp[32]; std::strftime(stamp, sizeof stamp, "%Y%m%d-%H%M%S", std::localtime(&now)); return "logs/cansat-" + std::string(stamp) + ".csv";
 }
-static void render(const Telemetry &t, unsigned received, unsigned missed) {
-  std::printf("\033[2J\033[HCanSat ground station\n\nLink      %u received, %u missed | latest sequence %u\n", received, missed, t.seq);
+static void render(const Telemetry &t, unsigned received, unsigned missed, const char *source) {
+  std::printf("\033[2J\033[HCanSat ground station — RECEIVING\n\nLink      %u received, %u missed | latest sequence %u\n", received, missed, t.seq);
   const char *states[] = {"boot", "preflight", "ready", "ascent", "descent", "landed", "recovery"}; const char *events[] = {"", "booted", "ready", "ascent", "descent", "landed", "recovery", "command"};
   std::printf("Mission   %s%s%s\n", t.state < 7 ? states[t.state] : "unknown", t.event ? " | event: " : "", t.event < 8 ? events[t.event] : "unknown");
   std::printf("Atmosphere  %.2f C | %u Pa | relative altitude %.2f m\n", t.temp / 100.f, t.pressure, t.altitude / 100.f);
   std::printf("BMP280      %s | previous radio TX %s\n", (t.flags & 1) ? "valid" : "waiting", (t.flags & 2) ? "timed out" : "ok");
+  std::printf("Health      %u (BMP fault=%s, radio fault=%s)\n", t.health, (t.health & 1) ? "yes" : "no", (t.health & 2) ? "yes" : "no");
+  std::printf("Source      %s\nCtrl+C to stop; CSV saved in logs/.\n", source);
   std::fflush(stdout);
 }
 int main(int argc, char **argv) {
@@ -27,6 +29,6 @@ int main(int argc, char **argv) {
   FILE *log = std::fopen(path.c_str(), "w"); if (!log) return std::perror(path.c_str()), 1;
   std::fputs("ms,seq,state,temp_centi_c,pressure_pa,relative_altitude_cm,flags,health,event\n", log);
   char line[128]; Telemetry t{}; unsigned received = 0, missed = 0, previous = 0; bool has_previous = false;
-  while (std::fgets(line, sizeof line, stdin)) if (parse(line, t)) { if (has_previous) missed += (t.seq - previous - 1) & 255; previous = t.seq; has_previous = true; ++received; std::fputs(line, log); std::fflush(log); render(t, received, missed); }
-  std::fclose(log);
+  while (std::fgets(line, sizeof line, stdin)) if (parse(line, t)) { if (has_previous) missed += (t.seq - previous - 1) & 255; previous = t.seq; has_previous = true; ++received; std::fputs(line, log); if (std::fflush(log) || std::ferror(log)) return std::perror(path.c_str()), std::fclose(log), 1; render(t, received, missed, argc > 2 ? argv[2] : "USB telemetry"); }
+  if (std::fclose(log)) return std::perror(path.c_str()), 1;
 }

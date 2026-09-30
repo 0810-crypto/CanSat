@@ -2,7 +2,7 @@
 
 This folder contains the **primary mission only**. The flight Pico 2 reads BMP280 pressure and temperature, calculates altitude and mission state, then transmits telemetry with an RFM69HCW radio. There is no LiDAR build or LiDAR wiring in this version.
 
-**Want to run it?** Start with [RUN_COMMANDS.md](RUN_COMMANDS.md). It gives the exact Terminal commands for a CanSat folder in Downloads, including simulation, firmware build, flashing, and live USB output.
+**Want to run it?** In `~/Code/CanSat`, type `./run` (or `make run`) to build and watch a USB Pico with live status and CSV logging. Type `./run --demo` to try the terminal without hardware. Start with [RUN_COMMANDS.md](RUN_COMMANDS.md) for firmware build, flashing, and receiver wiring.
 
 **For the other coder:** [CODE_WALKTHROUGH.md](CODE_WALKTHROUGH.md) follows the readings from sensor to radio to dashboard and explains each source file with line links, units, state changes, tests, and the places to edit.
 
@@ -33,7 +33,7 @@ The BMP280 address in `pico/pins.hpp` is the preferred default. Flight startup c
 In Terminal:
 
 ```sh
-cd ~/Downloads/CanSat
+cd ~/Code/CanSat
 make check
 make demo
 ```
@@ -45,7 +45,7 @@ For the circuit view, run `make circuit` and open the local address printed in T
 ## Build and flash
 
 ```sh
-cd ~/Downloads/CanSat
+cd ~/Code/CanSat
 export PICO_SDK_PATH="$HOME/pico-sdk"
 make firmware
 ```
